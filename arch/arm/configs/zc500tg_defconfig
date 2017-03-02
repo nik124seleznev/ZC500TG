@@ -467,7 +467,5 @@ CONFIG_TOUCHSCREEN_MTK_FT5X0X=y
 
 #zc500tg drivers / sensors:
 
-#CONFIG_CUSTOM_KERNEL_LCM="zaw806_nt35521s_hd720_dsi_vdo_txdqc_TXDT500SYPA"
-#CONFIG_CUSTOM_KERNEL_LCM="zaw806_nt35521s_hd720_dsi_vdo_txd_TXDT500SYPA"
 CONFIG_CUSTOM_KERNEL_LCM="zaw806_ili9881c_hd720_dsi_vdo_dijing zaw806_otm1287a_hd720_dsi_vdo zaw806_nt35521s_hd720_dsi_vdo_txd_TXDT500SYPA zaw806_nt35521s_hd720_dsi_vdo_txdqc_TXDT500SYPA"
 
