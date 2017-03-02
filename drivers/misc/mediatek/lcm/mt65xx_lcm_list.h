@@ -9,6 +9,8 @@ extern LCM_DRIVER lcm_common_drv;
 
 extern LCM_DRIVER zaw806_nt35521s_hd720_dsi_vdo_txdqc_TXDT500SYPA_lcm_drv;//add by txd
 extern LCM_DRIVER zaw806_nt35521s_hd720_dsi_vdo_txd_TXDT500SYPA_lcm_drv;//add by txd
+extern LCM_DRIVER zaw806_ili9881c_hd720_dsi_vdo_dijing_lcm_drv;
+extern LCM_DRIVER zaw806_otm1287a_hd720_dsi_vdo_lcm_drv;
 
 extern LCM_DRIVER hct_otm1285a_dsi_vdo_hd_boe;
 extern LCM_DRIVER hct_otm1282a_dsi_vdo_hd_auo;
