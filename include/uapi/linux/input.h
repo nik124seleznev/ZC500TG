@@ -480,6 +480,18 @@ struct input_keymap_entry {
 
 #define KEY_MICMUTE		248	/* Mute / unmute the microphone */
 
+
+/*add by shenwuyi for GT9XX handgesture*/
+#define KEY_GESTURE_C    0x230
+#define KEY_GESTURE_E    0x231 
+#define KEY_GESTURE_S    0x232  
+#define KEY_GESTURE_V    0x233 
+#define KEY_GESTURE_W    0x234 
+#define KEY_GESTURE_Z    0x235 
+#define KEY_GESTURE_CC   0x236 
+
+
+/*shenwuyi add end*/
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
 #define BTN_MISC		0x100

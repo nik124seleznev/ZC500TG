@@ -60,6 +60,8 @@ struct of_device_id touch_of_match[] = {
 	{},
 };
 
+static int gesture_en = 0;//erick mofigy/// STAS
+
 void tpd_get_dts_info(void)
 {
 	struct device_node *node1 = NULL;
@@ -281,6 +283,7 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				break;
 			}
 			break;
+
 	default:
 		pr_err("tpd: unknown IOCTL: 0x%08x\n", cmd);
 		err = -ENOIOCTLCMD;
@@ -465,6 +468,35 @@ static void tpd_create_attributes(struct device *dev, struct tpd_attrs *attrs)
 	for (; num > 0;)
 		device_create_file(dev, attrs->attr[--num]);
 }
+
+//erick modify//////////////////////////STAS
+static ssize_t show_tpd_gesture_state(struct device *dev, struct device_attribute *attr,
+					char *buf)
+{
+	return sprintf(buf, "%d\n", gesture_en);
+}
+
+static ssize_t store_tpd_gesture_state(struct device *dev, struct device_attribute *attr,
+					 const char *buf, size_t size)
+{
+	if(!strncmp(buf, "1", 1)) 
+	{
+		gesture_en = 1;
+	}
+	else if(!strncmp(buf, "0", 1))
+	{
+		gesture_en = 0;
+	}
+		
+	return size;
+}
+
+int tpd_get_gesture_state(void)
+{
+	return gesture_en;
+}
+//////////////////////////////////////////////////
+///////////////////////
 
 /* touch panel probe */
 static int tpd_probe(struct platform_device *pdev)
