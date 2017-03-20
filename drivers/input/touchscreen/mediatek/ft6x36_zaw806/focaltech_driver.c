@@ -19,7 +19,6 @@
 #ifdef FTS_CTL_IIC
 #include "focaltech_ctl.h"
 #endif
-#include "mach/eint.h"
 #ifdef TPD_SYSFS_DEBUG
 #include "focaltech_ex_fun.h"
 #endif
@@ -31,7 +30,7 @@
 
 #include "cust_gpio_usage.h"
 #include <mach/battery_common.h>
-#include <mach/eint.h>
+
 extern struct tpd_device *tpd;
 
 //#define FTS_SCAP_TEST
@@ -129,7 +128,7 @@ extern void mt_eint_unmask(unsigned int line);
 extern void mt_eint_mask(unsigned int line);
 extern void mt_eint_set_hw_debounce(unsigned int eint_num, unsigned int ms);
 extern unsigned int mt_eint_set_sens(unsigned int eint_num, unsigned int sens);
-//extern void mt_eint_registration(unsigned int eint_num, unsigned int is_deb_en, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
+//extern void mt_eint_registration(unsigned int eint_num, unsigned int is_deb_en, unsigned int pol, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
 extern int tpd_get_gesture_state(void);
 extern unsigned int g_call_state;
  
@@ -1264,7 +1263,7 @@ reset_proc:
  
 static int tpd_local_init(void)
 {
-  	DBG("FTS I2C Touchscreen Driver (Built %s @ %s)\n", "__DATE__", "__TIME__");
+  	DBG("FTS I2C Touchscreen Driver (Built %s @ %s)\n", __DATE__, __TIME__);
  
    	if(i2c_add_driver(&tpd_i2c_driver)!=0)
    	{

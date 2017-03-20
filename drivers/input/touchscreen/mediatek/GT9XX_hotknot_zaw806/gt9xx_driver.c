@@ -40,7 +40,6 @@
 #define GUP_FW_INFO
 #include "tpd_custom_gt9xx.h"
 
-#include "mach/eint.h"
 #include "cust_gpio_usage.h" 
 
 #ifdef TPD_PROXIMITY
@@ -53,8 +52,7 @@
     #include <linux/dma-mapping.h>
 #endif
 #include <linux/proc_fs.h>  /*proc*/
-#include <mt-plat/battery_common.h>
-#include <mach/eint.h>
+#include <mach/battery_common.h>
 
 extern struct tpd_device *tpd;
 #ifdef VELOCITY_CUSTOM

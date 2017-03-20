@@ -137,7 +137,7 @@ static void tool_set_proc_name(char * procname)
     char month[4] = {0};
     int i = 0, n_month = 1, n_day = 0, n_year = 0;
     
-    sprintf(date, "%s", "__DATE__");
+    sprintf(date, "%s", __DATE__);
     
     //GTP_DEBUG("compile date: %s", date);
     

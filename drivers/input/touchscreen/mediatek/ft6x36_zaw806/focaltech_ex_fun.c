@@ -1458,7 +1458,7 @@ static ssize_t fts_tprwreg_store(struct device *dev,
 	}
 
 	memcpy(valbuf, buf, num_read_chars);
-	retval = kstrtoul(valbuf, 16, &wmreg);
+	retval = strict_strtoul(valbuf, 16, &wmreg);
 
 	if (0 != retval) {
 		printk(&client->dev, "%s() - ERROR: Could not convert the "\
