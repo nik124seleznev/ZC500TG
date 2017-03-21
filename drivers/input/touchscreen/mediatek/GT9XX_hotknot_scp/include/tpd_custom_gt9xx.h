@@ -96,7 +96,7 @@ extern unsigned char gtp_default_FW_fl[];
 
 #define CONFIG_OF_TOUCH
 /***************************PART1:ON/OFF define*******************************/
-#define GTP_HAVE_TOUCH_KEY    0
+#define GTP_HAVE_TOUCH_KEY    1
 
 #define GTP_COMPATIBLE_MODE   1	/* compatible with GT9XXF*/
 #define GTP_ESD_PROTECT       0	/* esd protection with a cycle of 2 seconds*/
@@ -116,7 +116,7 @@ extern unsigned char gtp_default_FW_fl[];
 #define GTP_SCP_GESTURE_WAKEUP  0	/* Gesture wakeup by SCP */
 #endif
 
-#define GTP_DEBUG_ON          0
+#define GTP_DEBUG_ON          1
 #define GTP_DEBUG_ARRAY_ON    0
 #define GTP_DEBUG_FUNC_ON     0
 
@@ -150,7 +150,9 @@ extern void force_reset_guitar(void);
 
 /*STEP_4(optional):If this project have touch key,Set touch key config.*/
 #if GTP_HAVE_TOUCH_KEY
-#define GTP_KEY_TAB	 {KEY_MENU, KEY_HOME, KEY_BACK, KEY_SEND}
+#define GTP_KEY_TAB	 {KEY_MENU, KEY_HOME, KEY_BACK}
+#define GTP_KEY_MAP_ARRAY  {KEY_MENU, KEY_HOME, KEY_BACK}///////////////////////////////new
+
 #endif
 
 /***************************PART3:OTHER define*********************************/
@@ -230,7 +232,7 @@ typedef enum {
 #define GTP_DMA_MAX_TRANSACTION_LENGTH  255
 #define GTP_DMA_MAX_I2C_TRANSFER_SIZE   (GTP_DMA_MAX_TRANSACTION_LENGTH - GTP_ADDR_LENGTH)
 #define MAX_TRANSACTION_LENGTH        8
-#define TPD_I2C_NUMBER				I2C_CAP_TOUCH_CHANNEL
+#define TPD_I2C_NUMBER		      1
 #define I2C_MASTER_CLOCK              300
 #define MAX_I2C_TRANSFER_SIZE         (MAX_TRANSACTION_LENGTH - GTP_ADDR_LENGTH)
 #define TPD_MAX_RESET_COUNT           3

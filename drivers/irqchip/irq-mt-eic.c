@@ -62,18 +62,10 @@ enum {
 	ERR_SIM_HOT_PLUG_QUERY_STRING,
 } sim_hot_plug_eint_queryErr;
 #endif
-///////////////////////////////////////STAS//
-typedef void (*eint_funct) (void);
-/*struct eint_func {
-	unsigned int *eint_auto_umask;
-	unsigned int *deb_time;
-	struct timer_list *eint_sw_deb_timer;
-	unsigned int *count;
-	unsigned int *gpio;
-};*/
+
+
 
 struct eint_func {
-	eint_funct *eint_func;
 	unsigned int *eint_auto_umask;
 	/*is_deb_en: 1 means enable, 0 means disable */
 	unsigned int *is_deb_en;
@@ -82,7 +74,6 @@ struct eint_func {
 	unsigned int *count;
 	unsigned int *gpio;
 };
-///////////////////////////////////////////////////////
 
 struct builtin_eint {
 	unsigned int gpio;
@@ -114,7 +105,6 @@ struct wakeup_source EINT_suspend_lock;
 struct wake_lock EINT_suspend_lock;
 #endif
 
-static DEFINE_SPINLOCK(eint_lock);
 
 struct deint_des {
 	int eint_num;
@@ -1027,52 +1017,6 @@ void mt_eint_dis_debounce(unsigned int eint_num)
 		mt_eint_dis_sw_debounce(eint_num);
 }
 
-
-/*
- * mt_eint_registration: register a EINT.
- * @eint_num: the EINT number to register
- * @flag: the interrupt line behaviour to select
- * @EINT_FUNC_PTR: the ISR callback function
- * @is_auto_unmask: the indication flag of auto unmasking after ISR callback is processed
- */
-#if 1
-void mt_eint_registration(unsigned int eint_num, unsigned int flag,
-			  void (EINT_FUNC_PTR) (void),
-			  unsigned int is_auto_umask)
-{
-	if (eint_num < EINT_MAX_CHANNEL) {
-		pr_notice("eint register for %d\n", eint_num);
-		spin_lock(&eint_lock);
-		mt_eint_mask(eint_num);
-
-		if (flag & (EINTF_TRIGGER_RISING | EINTF_TRIGGER_FALLING)) {
-			mt_eint_set_polarity(eint_num,
-					     (flag & EINTF_TRIGGER_FALLING) ?
-					     MT_EINT_POL_NEG : MT_EINT_POL_POS);
-			mt_eint_set_sens(eint_num, MT_EDGE_SENSITIVE);
-		} else if (flag & (EINTF_TRIGGER_HIGH | EINTF_TRIGGER_LOW)) {
-			mt_eint_set_polarity(eint_num,
-					     (flag & EINTF_TRIGGER_LOW) ?
-					     MT_EINT_POL_NEG : MT_EINT_POL_POS);
-			mt_eint_set_sens(eint_num, MT_LEVEL_SENSITIVE);
-		} else {
-			pr_err("[EINT]: Wrong EINT Pol/Sens Setting 0x%x\n",
-			       flag);
-			spin_unlock(&eint_lock);
-			return;
-		}
-
-		EINT_FUNC.eint_func[eint_num] = EINT_FUNC_PTR;
-		spin_unlock(&eint_lock);
-		EINT_FUNC.eint_auto_umask[eint_num] = is_auto_umask;
-		mt_eint_ack(eint_num);
-		mt_eint_unmask(eint_num);
-	} else {
-		pr_err("[EINT]: Wrong EINT Number %d\n", eint_num);
-	}
-}
-EXPORT_SYMBOL(mt_eint_registration);
-#endif
 /*
  * mt_eint_setdomain0: set all eint_num to domain 0.
  */
