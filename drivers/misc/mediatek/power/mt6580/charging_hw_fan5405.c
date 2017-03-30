@@ -148,16 +148,16 @@ static u32 charging_hw_init(void *data)
 	pmic_set_register_value(PMIC_RG_USBDL_SET, 0x0);
 	pmic_set_register_value(PMIC_RG_USBDL_RST, 0x1);
 #if defined(HIGH_BATTERY_VOLTAGE_SUPPORT)
-	fan5405_reg_config_interface(0x06, 0x77);	/* ISAFE = 1250mA, VSAFE = 4.34V */
+	fan5405_reg_config_interface(0x06, 0x49);	/* ISAFE = 1250mA, VSAFE = 4.34V */
 #else
 	fan5405_reg_config_interface(0x06, 0x70);
 #endif
 
 	fan5405_reg_config_interface(0x00, 0xC0);	/* kick chip watch dog */
 	fan5405_reg_config_interface(0x01, 0xb8);	/* TE=1, CE=0, HZ_MODE=0, OPA_MODE=0 */
-	fan5405_reg_config_interface(0x05, 0x03);
+	fan5405_reg_config_interface(0x05, 0x04);
 	if (!charging_init_flag) {
-		fan5405_reg_config_interface(0x04, 0x1A);	/* 146mA */
+		fan5405_reg_config_interface(0x04, 0x19);	/* 146mA */
 		charging_init_flag = KAL_TRUE;
 	}
 	return status;
