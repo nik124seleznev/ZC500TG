@@ -458,7 +458,7 @@ void fan5405_set_v_safe(u32 val)
 void fan5405_dump_register(void)
 {
 	int i = 0;
-
+ printk("[fan5405] ");
 	for (i = 0; i < fan5405_REG_NUM; i++) {
 		fan5405_read_byte(i, &fan5405_reg[i]);
 		battery_log(BAT_LOG_CRTI, "[0x%x]=0x%x ", i, fan5405_reg[i]);
@@ -467,7 +467,9 @@ void fan5405_dump_register(void)
 }
 
 static int fan5405_driver_probe(struct i2c_client *client, const struct i2c_device_id *id)
-{
+{ 
+battery_log(BAT_LOG_CRTI,"[fan5405_driver_probe] \n");
+
 	new_client = client;
 
 	fan5405_dump_register();
@@ -546,10 +548,13 @@ static struct platform_driver fan5405_user_space_driver = {
 		   .name = "fan5405-user",
 	},
 };
+static struct i2c_board_info __initdata i2c_fan5405 = { I2C_BOARD_INFO("fan5405", (fan5405_SLAVE_ADDR_WRITE>>1))};
 
 static int __init fan5405_init(void)
 {
 	int ret = 0;
+   battery_log(BAT_LOG_CRTI,"[fan5405_init] init start\n");
+     i2c_register_board_info(FAN5405_BUSNUM, &i2c_fan5405, 1);
 
 	if (i2c_add_driver(&fan5405_driver) != 0) {
 		battery_log(BAT_LOG_CRTI,

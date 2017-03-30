@@ -776,6 +776,12 @@
 			compatible = "mediatek,mt6580-touch_panel";
 vtouch-supply = <&mt_pmic_vgp1_ldo_reg>;
 		};
+		
+           fan5405:fan5405@6a {
+                status = "okay";
+                compatible = "fan5405";
+                reg = <0x6a>;
+            };
 
 		gse_1: gse_1 {
 			compatible = "mediatek, gse_1-eint";

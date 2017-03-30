@@ -701,7 +701,7 @@ bool get_usb_current_unlimited(void)
 {
 	if (BMT_status.charger_type == STANDARD_HOST || BMT_status.charger_type == CHARGING_HOST)
 		return usb_unlimited;
-
+else
 		return false;
 }
 
@@ -744,6 +744,14 @@ void select_charging_current_bcct(void)
 		/* set IOCHARGE */
 		if (g_bcct_value < 550)
 			g_temp_CC_value = CHARGE_CURRENT_0_00_MA;
+		else if (g_bcct_value < 250)
+			g_temp_CC_value = CHARGE_CURRENT_150_00_MA;
+		else if (g_bcct_value < 350)
+			g_temp_CC_value = CHARGE_CURRENT_250_00_MA;
+		else if (g_bcct_value < 450)
+			g_temp_CC_value = CHARGE_CURRENT_350_00_MA;
+		else if (g_bcct_value < 550)
+			g_temp_CC_value = CHARGE_CURRENT_450_00_MA;
 		else if (g_bcct_value < 650)
 			g_temp_CC_value = CHARGE_CURRENT_550_00_MA;
 		else if (g_bcct_value < 750)
