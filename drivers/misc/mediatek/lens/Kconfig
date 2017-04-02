@@ -8,6 +8,24 @@ config MTK_LENS
 # LENS
 #
 
+config MTK_LENS_DW9714AF_OV8858_SUPPORT
+  bool "DW9714AF_OV8858 Lens Driver"
+  default n
+  help
+    DW9714AF_OV8858 Lens Driver
+    This config is used to enable the corresponding
+    lens driver for the camera sensor module
+    Set as y if the driver is used in this project
+
+config MTK_LENS_DW9714AF_S5K4H5_SUPPORT
+  bool "DW9714AF_S5K4H5 Lens Driver"
+  default n
+  help
+    DW9714AF_S5K4H5 Lens Driver
+    This config is used to enable the corresponding
+    lens driver for the camera sensor module
+    Set as y if the driver is used in this project
+
 config MTK_LENS_DUMMYLENS_SUPPORT
   bool "Dummy Lens Driver"
   default n
