@@ -47,11 +47,12 @@ static int tpd_keys_dim_local[TPD_KEY_COUNT][4] = TPD_KEYS_DIM;
 #if GTP_HAVE_TOUCH_KEY
 const u16 touch_key_array[] = TPD_KEYS;
 #define GTP_MAX_KEY_NUM (sizeof(touch_key_array)/sizeof(touch_key_array[0]))
-struct touch_virtual_key_map_t {
+/*struct touch_virtual_key_map_t {
 	int point_x;
 	int point_y;
 };
 static struct touch_virtual_key_map_t touch_key_point_maping_array[] = GTP_KEY_MAP_ARRAY;
+*/
 #endif
 
 #ifdef CONFIG_OF_TOUCH
@@ -2598,13 +2599,14 @@ static int touch_event_handler(void *unused)
 		key_value = point_data[3 + 8 * touch_num];
 		if (key_value || pre_key) {
 			for (i = 0; i < TPD_KEY_COUNT; i++) {
-				if (key_value & (0x01 << i)) {	/*key=1 menu ;key=2 home; key =4 back;*/
+     input_report_key(tpd->dev, touch_key_array[i], key_value & (0x01 << i));
+					/*if (key_value & (0x01 << i)) {	//key=1 menu ;key=2 home; key =4 back;
 					input_x = touch_key_point_maping_array[i].point_x;
 					input_y = touch_key_point_maping_array[i].point_y;
 					GTP_DEBUG("<<GTP>>button =%d %d", input_x, input_y);
 
 					tpd_down(input_x, input_y, 0, 0);
-				}
+				}*/
 			}
 
 			if ((pre_key != 0) && (key_value == 0))
