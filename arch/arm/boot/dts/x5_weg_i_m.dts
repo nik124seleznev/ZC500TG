@@ -446,7 +446,7 @@
 	AUD_pins_extamp_high:extampouthigh {
 
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO4__FUNC_GPIO4>;
+			pins = <PINMUX_GPIO12__FUNC_GPIO12>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -455,7 +455,7 @@
 	AUD_pins_extamp_low:extampoutlow {
 
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO4__FUNC_GPIO4>;
+			pins = <PINMUX_GPIO12__FUNC_GPIO12>;
 			slew-rate = <1>;
 			output-low;
 		};

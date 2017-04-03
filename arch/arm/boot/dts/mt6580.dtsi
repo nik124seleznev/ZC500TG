@@ -903,6 +903,7 @@ vtouch-supply = <&mt_pmic_vgp1_ldo_reg>;
 			audclk-gpio = <26 0>;
 			audmiso-gpio = <28 0>;
 			audmosi-gpio = <27 0>;
+                        extspkamp-gpio = <12 0>; 
 		};
 
 		mt_soc_ul1_PCM@11140000 {
