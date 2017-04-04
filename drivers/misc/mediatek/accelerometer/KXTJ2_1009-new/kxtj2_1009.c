@@ -57,6 +57,7 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
+static struct i2c_board_info __initdata i2c_kxtj2_1009={ I2C_BOARD_INFO(KXTJ2_1009_DEV_NAME, (KXTJ2_1009_I2C_SLAVE_ADDR>>1))};
 static const struct i2c_device_id kxtj2_1009_i2c_id[] = { {KXTJ2_1009_DEV_NAME, 0}, {} };
 
 #define COMPATIABLE_NAME "mediatek,kxtj2_1009_new"
@@ -2435,6 +2436,7 @@ static int __init kxtj2_1009_init(void)
 	if (!hw)
 		GSE_ERR("get dts info fail\n");
 	GSE_LOG("%s: i2c_number=%d\n", __func__, hw->i2c_num);
+        i2c_register_board_info(hw->i2c_num, &i2c_kxtj2_1009, 1);
 	acc_driver_add(&kxtj2_1009_init_info);
 
 	return 0;
