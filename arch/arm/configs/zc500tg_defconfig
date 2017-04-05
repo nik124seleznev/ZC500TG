@@ -463,7 +463,7 @@ CONFIG_LCM_WIDTH="720"
 
 #zc500tg drivers / sensors:
 CONFIG_MTK_KXTJ2_1009_NEW=y
-CONFIG_MTK_STK3X1X_NEW=y
+#CONFIG_MTK_STK3X1X_NEW=y
 CONFIG_MTK_AKM09911_NEW=y
 CONFIG_CUSTOM_KERNEL_IMGSENSOR="ov8858_mipi_raw s5k4h5yc_mipi_raw gc2355_mipi_raw ov2680_mipi_raw"
 CONFIG_CUSTOM_KERNEL_LCM="zaw806_ili9881c_hd720_dsi_vdo_dijing zaw806_otm1287a_hd720_dsi_vdo zaw806_nt35521s_hd720_dsi_vdo_txd_TXDT500SYPA zaw806_nt35521s_hd720_dsi_vdo_txdqc_TXDT500SYPA"
