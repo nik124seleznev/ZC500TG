@@ -35,6 +35,13 @@ struct alsps_hw {
 	int power_lp_mode_ctrl;         /*!< 1: disable ldo low power mode when p sensor enabled ; 0: no action*/
 	bool is_batch_supported_ps;
 	bool is_batch_supported_als;
+/*------CCI add for sensortek start-------*/
+	unsigned int    state_val;
+	unsigned int    psctrl_val;
+	unsigned int    alsctrl_val;
+	unsigned int    ledctrl_val;
+	unsigned int    wait_val;
+/*-----CCI add for sensortek end---------*/
 };
 
 struct alsps_hw *get_alsps_dts_func(const char *, struct alsps_hw*);
