@@ -709,7 +709,7 @@
 	gpslna_pins_init: gpslna@0 {
 
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO3__FUNC_GPIO3>;
+			pins = <PINMUX_GPIO65__FUNC_GPIO65>;
 			slew-rate = <0>;
 			bias-disable;
 			output-low;
@@ -719,7 +719,7 @@
 	gpslna_pins_oh: gpslna@1 {
 
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO3__FUNC_GPIO3>;
+			pins = <PINMUX_GPIO65__FUNC_GPIO65>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -728,7 +728,7 @@
 	gpslna_pins_ol: gpslna@2 {
 
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO3__FUNC_GPIO3>;
+			pins = <PINMUX_GPIO65__FUNC_GPIO65>;
 			slew-rate = <1>;
 			output-low;
 		};
