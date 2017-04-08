@@ -1306,8 +1306,14 @@ vtouch-supply = <&mt_pmic_vgp1_ldo_reg>;
 			compatible = "mediatek,gsensor";
                 reg = <0x4c>;
                 status = "okay";
-
 		};
+		
+		alsps@60 {
+			compatible = "mediatek,alsps";
+			reg = <0x60>;
+			status = "okay";
+		};		
+		
 		alsps:als_ps@0 {
 			compatible = "mediatek,als_ps";
 		};
