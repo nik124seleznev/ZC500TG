@@ -284,8 +284,9 @@
 			pins = <PINMUX_GPIO6__FUNC_EINT6>;
 			slew-rate = <0>;
 			bias-pull-up = <00>;
+		};
 	};
-	gyro_intpin_cfg: gyropincfg {
+gyro_intpin_cfg: gyropincfg {
 	    pins_cmd_dat {
 			pins = <PINMUX_GPIO1__FUNC_GPIO1>;
 			slew-rate = <0>;
