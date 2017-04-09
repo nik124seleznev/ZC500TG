@@ -27,9 +27,11 @@
 #include <linux/fs.h>
 #include <asm/atomic.h>
 //#include <asm/system.h>
-
-#include <linux/types.h>
-
+#include <linux/xlog.h>
+//lili add
+#include <linux/proc_fs.h> 
+#include <linux/seq_file.h>
+//lili add end
 #include "kd_camera_hw.h"
 #include "kd_imgsensor.h"
 #include "kd_imgsensor_define.h"
@@ -38,7 +40,7 @@
 #include "s5k4h5ycmipiraw_Sensor.h"
 
 #define PFX "S5K4H5YC_camera_sensor"
-#define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
+#define LOG_INF(format, args...)	pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 extern int iReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId);//add by hhl
 extern int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId);//add by hhl
 #define write_cmos_sensor(addr, para) iWriteReg((u16) addr , (u32) para , 1, imgsensor.i2c_write_id)//add by hhl
@@ -51,12 +53,12 @@ static imgsensor_info_struct imgsensor_info = {
 	.checksum_value = 0x82256eb5,
 	
 	.pre = {
-		.pclk = 280000000,
+		.pclk = 282000000,
 		.linelength = 3688,
 		.framelength = 2512,
 		.startx = 0,
 		.starty = 0,
-		.grabwindow_width = 1632,		//record different mode's width of grabwindow
+		.grabwindow_width  = 1632,		//record different mode's width of grabwindow
 		.grabwindow_height = 1224,		//record different mode's height of grabwindow
 		/*	 following for MIPIDataLowPwr2HighSpeedSettleDelayCount by different scenario	*/
 		.mipi_data_lp2hs_settle_dc = 14,
@@ -64,18 +66,18 @@ static imgsensor_info_struct imgsensor_info = {
 		.max_framerate = 300,	
 	},
 	.cap = {
-		.pclk = 280000000,
+		.pclk = 282000000,
 		.linelength = 3688,
 		.framelength = 2512,
 		.startx = 0,
 		.starty = 0,
-		.grabwindow_width = 3264,//3200,
-		.grabwindow_height = 2448,//2400,
+		.grabwindow_width = 3264,
+		.grabwindow_height = 2448,
 		.mipi_data_lp2hs_settle_dc = 14,
 		.max_framerate = 300,
 	},
 	.cap1 = {
-		.pclk = 140000000,
+		.pclk = 141000000,
 		.linelength = 3688,
 		.framelength = 2530,
 		.startx = 0,
@@ -86,7 +88,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.max_framerate = 150,
 	},
 	.normal_video = {
-		.pclk = 280000000,
+		.pclk = 282000000,
 		.linelength = 3688,
 		.framelength = 2512,
 		.startx = 0,
@@ -97,7 +99,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.max_framerate = 300,
 	},
 	.hs_video = {
-		.pclk = 280000000,
+		.pclk = 282000000,
 		.linelength = 3688,
 		.framelength = 640,
 		.startx = 0,
@@ -108,7 +110,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.max_framerate = 1200,
 	},
 	.slim_video = {
-		.pclk = 280000000,
+		.pclk = 282000000,
 		.linelength = 3688,
 		.framelength = 2512,
 		.startx = 0,
@@ -140,10 +142,11 @@ static imgsensor_info_struct imgsensor_info = {
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
     .mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
     .mipi_settle_delay_mode = MIPI_SETTLEDELAY_AUTO,//0,MIPI_SETTLEDELAY_AUTO; 1,MIPI_SETTLEDELAY_MANNUAL
-	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,
-	.mclk = 24,
+	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,//Gr
+	//modiby by yangbo for rf interference
+	.mclk = 26, //24
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,
-    .i2c_addr_table = {0x20, 0x6c, 0xff},
+	.i2c_addr_table = {0x20},
     .i2c_speed = 300, 
 };
 
@@ -166,9 +169,9 @@ static imgsensor_struct imgsensor = {
 
 /* Sensor output window information */
 static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[5] =	 
-{{ 3280, 2464,	  0,	  0,   3280, 2464, 1640, 1232, 0000, 0000, 1640, 1232,	0,	0, 1600, 1200}, // Preview 
- { 3280, 2464,	  0,	  0,   3280, 2464, 3280, 2464, 0000, 0000, 3280, 2464,	0,	0, 3200, 2400}, // capture 
- { 3280, 2464,	  0,	  0,   3280, 2464, 3280, 2464, 0000, 0000, 3280, 2464,	0,	0, 3200, 2400}, // video 
+{{ 3280, 2464,	  0,	  0,   3280, 2464, 1640, 1232, 0000, 0000, 1640, 1232,	0,	0, 1632, 1224}, // Preview 
+ { 3280, 2464,	  0,	  0,   3280, 2464, 3280, 2464, 0000, 0000, 3280, 2464,	0,	0, 3264, 2448}, // capture 
+ { 3280, 2464,	  0,	  0,   3280, 2464, 3280, 2464, 0000, 0000, 3280, 2464,	0,	0, 3264, 2448}, // video 
  { 3280, 2464,	  0,    0,   3280, 2464, 820,  616,  0000, 0000, 820,  616,	  0,	0, 820,  616}, //hight speed video 
  { 3280, 2464,	  360,  512, 2562, 1440, 1280, 720,  0000, 0000, 1280, 720,	  0,	0, 1280, 720}};// slim video 
 
@@ -195,7 +198,265 @@ static void write_cmos_sensor(kal_uint32 addr, kal_uint32 para)
 	iWriteRegI2C(pu_send_cmd, 3, imgsensor.i2c_write_id);
 }
 */
+#define Sleep(ms) mdelay(ms)
 
+ #define S5K4H5YX_USE_AWB_OTP
+#define S5K4H5YXDB printk
+#if defined(S5K4H5YX_USE_AWB_OTP)
+struct S5K4H5YX_MIPI_otp_struct
+{
+    kal_uint16 customer_id;
+	kal_uint16 module_integrator_id;
+	kal_uint16 lens_id;
+	kal_uint16 rg_ratio;
+	kal_uint16 bg_ratio;
+	kal_uint16 user_data[5];
+	kal_uint16 R_to_G;
+	kal_uint16 B_to_G;
+	kal_uint16 G_to_G;
+	kal_uint16 R_Gain;
+	kal_uint16 G_Gain;
+	kal_uint16 B_Gain;
+	kal_uint32 G_ave;  //wsl
+};
+
+#define RG_TYPICAL 745//0.7275
+#define BG_TYPICAL 590//0.5758
+
+kal_uint32 tRG_Ratio_typical = RG_TYPICAL;
+kal_uint32 tBG_Ratio_typical = BG_TYPICAL;
+#define afotp_info_size 50
+static int open_count = 0;
+static char asus_afotp[afotp_info_size] = {0};
+
+static int AFOTP_proc_show(struct seq_file *seq, void *v) {
+	//sprintf(asus_afotp,"Infinity:%s macro:%s\n","0x15","0x239");
+	 seq_printf(seq, asus_afotp);
+	 return 0;
+}
+static int AFOTP_proc_open(struct inode *inode, struct file *file) {
+ 	return single_open(file, AFOTP_proc_show, NULL);
+}
+static const struct file_operations AFOTP_proc_fops = {
+	 .owner = THIS_MODULE,
+	 .open = AFOTP_proc_open,
+	 .read = seq_read,
+	 .llseek = seq_lseek,
+	 .release = single_release,
+};
+static int  AFOTP_proc_init(void) {
+	memset(asus_afotp,0,afotp_info_size);
+ 	proc_create("afotp_proc", 0666, NULL, &AFOTP_proc_fops);
+ 	return 0;
+}
+static void  AFOTP_proc_exit(void) {
+ 	remove_proc_entry("afotp_proc", NULL);
+}
+
+void S5K4H5YX_MIPI_read_otp_wb(struct S5K4H5YX_MIPI_otp_struct *otp)
+{
+	kal_uint32 R_to_G, B_to_G, G_ave,AWBFLG1,AWBFLG2;
+	kal_uint16 PageCount;
+	
+		S5K4H5YXDB("[S5K4H5YX] [%s, %d] PageCount=%d\n", __FUNCTION__, __LINE__, PageCount);	//0
+
+		write_cmos_sensor(0x3a02, PageCount); //page set
+		write_cmos_sensor(0x3a00, 0x01); //otp enable read
+		mdelay(2);
+		AWBFLG1=read_cmos_sensor(0x3A1A);
+		AWBFLG2=read_cmos_sensor(0x3A31);
+		write_cmos_sensor(0x3a00, 0x00); //otp disable read
+		if(AWBFLG2 == 0x01)
+			{
+			S5K4H5YXDB("[S5K4H5YX] [%s, %d] otp is in grooup 1", __FUNCTION__, __LINE__);
+			
+			write_cmos_sensor(0x3a02, PageCount); //page set
+			write_cmos_sensor(0x3a00, 0x01); //otp enable read
+
+			mdelay(2);
+			
+			R_to_G = (read_cmos_sensor(0x3a22)<<8)+read_cmos_sensor(0x3a23);
+			B_to_G = (read_cmos_sensor(0x3a24)<<8)+read_cmos_sensor(0x3a25);
+			G_ave = read_cmos_sensor(0x3a26);
+		sprintf(asus_afotp,"0x%x 0x%x 0x%x 0x%x %02d%02d%02d%x%x%x%x\n",
+		((((read_cmos_sensor(0x3a27)<<8)+read_cmos_sensor(0x3a28)))>>2)&0xff,
+		read_cmos_sensor(0x3a28)&0x03,
+		((((read_cmos_sensor(0x3a29)<<8)+read_cmos_sensor(0x3a2a)))>>2)&0xff,
+		read_cmos_sensor(0x3a2a)&0x03,
+						read_cmos_sensor(0x3a1c),
+						read_cmos_sensor(0x3a1d),
+						read_cmos_sensor(0x3a1e),
+						read_cmos_sensor(0x3a2b)>>4,
+						read_cmos_sensor(0x3a2b)&0x0f,
+						read_cmos_sensor(0x3a2c)>>4,
+						read_cmos_sensor(0x3a2c)&0x0f);	
+			write_cmos_sensor(0x3a00, 0x00); //otp disable read
+			}
+		else if(AWBFLG2 == 0x00 && AWBFLG1== 0X01)
+			{
+			S5K4H5YXDB("[S5K4H5YX] [S5K4H5YX_MIPI_read_otp_wb] otp is in group 0");
+			
+			write_cmos_sensor(0x3a02, PageCount); //page set
+			write_cmos_sensor(0x3a00, 0x01); //otp enable read
+
+			mdelay(2);
+			
+			R_to_G = (read_cmos_sensor(0x3a0B)<<8)+read_cmos_sensor(0x3a0C);
+			B_to_G = (read_cmos_sensor(0x3a0D)<<8)+read_cmos_sensor(0x3a0E);
+			G_ave = read_cmos_sensor(0x3a0F);
+			sprintf(asus_afotp,"0x%x 0x%x 0x%x 0x%x %02d%02d%02d%x%x%x%x\n",
+			((((read_cmos_sensor(0x3a10)<<8)+read_cmos_sensor(0x3a11)))>>2)&0xff,
+			read_cmos_sensor(0x3a11)&0x03,
+			((((read_cmos_sensor(0x3a12)<<8)+read_cmos_sensor(0x3a13)))>>2)&0xff,
+			read_cmos_sensor(0x3a13)&0x03,
+						read_cmos_sensor(0x3a05),
+						read_cmos_sensor(0x3a06),
+						read_cmos_sensor(0x3a07),
+						read_cmos_sensor(0x3a14)>>4,
+						read_cmos_sensor(0x3a14)&0x0f,
+						read_cmos_sensor(0x3a15)>>4,
+						read_cmos_sensor(0x3a15)&0x0f);
+			write_cmos_sensor(0x3a00, 0x00); //otp disable read
+			}
+		else if(AWBFLG2 == 0x00 && AWBFLG1== 0X00)
+			{
+			S5K4H5YXDB("[S5K4H5YX] [S5K4H5YX_MIPI_read_otp_wb] otp all value is zero");
+			}
+		else
+			{
+			S5K4H5YXDB("[S5K4H5YX] [S5K4H5YX_MIPI_read_otp_wb] otp all value is wrong");
+			}
+	otp->R_to_G = R_to_G;
+	otp->B_to_G = B_to_G;
+	otp->G_ave = G_ave;
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] otp->R_to_G=0x%x\n", __FUNCTION__, __LINE__, otp->R_to_G);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] otp->B_to_G=0x%x\n", __FUNCTION__, __LINE__, otp->B_to_G);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] otp->G_ave=0x%x\n", __FUNCTION__, __LINE__, otp->G_ave);	
+}
+
+void S5K4H5YX_MIPI_algorithm_otp_wb1(struct S5K4H5YX_MIPI_otp_struct *otp)
+{
+	kal_uint32 R_to_G, B_to_G, G_ave;
+	kal_uint32 R_Gain, B_Gain, G_Gain;
+	kal_uint32 G_gain_R, G_gain_B;
+	
+	R_to_G = otp->R_to_G;
+	B_to_G = otp->B_to_G;
+	G_ave = otp->G_ave;
+
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] R_to_G=%d\n",__FUNCTION__, __LINE__, R_to_G);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] B_to_G=%d\n", __FUNCTION__, __LINE__, B_to_G);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] G_ave=%d\n", __FUNCTION__, __LINE__, G_ave);
+
+	if(B_to_G < tBG_Ratio_typical)
+		{
+			if(R_to_G < tRG_Ratio_typical)
+				{
+					G_Gain = 0x100;
+					B_Gain = 0x100 * tBG_Ratio_typical / B_to_G;
+					R_Gain = 0x100 * tRG_Ratio_typical / R_to_G;
+				}
+			else
+				{
+			        R_Gain = 0x100;
+					G_Gain = 0x100 * R_to_G / tRG_Ratio_typical;
+					B_Gain = G_Gain * tBG_Ratio_typical / B_to_G;	        
+				}
+		}
+	else
+		{
+			if(R_to_G < tRG_Ratio_typical)
+				{
+			        B_Gain = 0x100;
+					G_Gain = 0x100 * B_to_G / tBG_Ratio_typical;
+					R_Gain = G_Gain * tRG_Ratio_typical / R_to_G;
+				}
+			else
+				{
+			        G_gain_B = 0x100*B_to_G / tBG_Ratio_typical;
+				    G_gain_R = 0x100*R_to_G / tRG_Ratio_typical;
+					
+					if(G_gain_B > G_gain_R)
+						{
+							B_Gain = 0x100;
+							G_Gain = G_gain_B;
+							R_Gain = G_Gain * tRG_Ratio_typical / R_to_G;
+						}
+					else
+						{
+							R_Gain = 0x100;
+							G_Gain = G_gain_R;
+							B_Gain = G_Gain * tBG_Ratio_typical / B_to_G;
+						}        
+				}	
+		}
+
+	otp->R_Gain = R_Gain;
+	otp->B_Gain = B_Gain;
+	otp->G_Gain = G_Gain;
+
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] R_gain=0x%x\n", __FUNCTION__, __LINE__,otp->R_Gain);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] B_gain=0x%x\n", __FUNCTION__, __LINE__, otp->B_Gain);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] G_gain=0x%x\n", __FUNCTION__, __LINE__, otp->G_Gain);
+}
+
+
+
+void S5K4H5YX_MIPI_write_otp_wb(struct S5K4H5YX_MIPI_otp_struct *otp)
+{
+	kal_uint16 R_GainH, B_GainH, G_GainH;
+	kal_uint16 R_GainL, B_GainL, G_GainL;
+	kal_uint32 temp;
+
+	temp = otp->R_Gain;
+	R_GainH = (temp & 0xff00)>>8;
+	temp = otp->R_Gain;
+	R_GainL = (temp & 0x00ff);
+
+	temp = otp->B_Gain;
+	B_GainH = (temp & 0xff00)>>8;
+	temp = otp->B_Gain;
+	B_GainL = (temp & 0x00ff);
+
+	temp = otp->G_Gain;
+	G_GainH = (temp & 0xff00)>>8;
+	temp = otp->G_Gain;
+	G_GainL = (temp & 0x00ff);
+
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] R_GainH=0x%x\n", __FUNCTION__, __LINE__, R_GainH);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] R_GainL=0x%x\n", __FUNCTION__, __LINE__,R_GainL);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] B_GainH=0x%x\n", __FUNCTION__, __LINE__,B_GainH);
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] B_GainL=0x%x\n", __FUNCTION__, __LINE__,B_GainL);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] G_GainH=0x%x\n", __FUNCTION__, __LINE__,G_GainH);	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] G_GainL=0x%x\n", __FUNCTION__, __LINE__,G_GainL);
+
+	write_cmos_sensor(0x020e, G_GainH);
+	write_cmos_sensor(0x020f, G_GainL);
+	write_cmos_sensor(0x0210, R_GainH);
+	write_cmos_sensor(0x0211, R_GainL);
+	write_cmos_sensor(0x0212, B_GainH);
+	write_cmos_sensor(0x0213, B_GainL);
+	write_cmos_sensor(0x0214, G_GainH);
+	write_cmos_sensor(0x0215, G_GainL);
+
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x020e,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x020e));	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x020f,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x020f));	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0210,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x0210));
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0211,0x%x]\n", __FUNCTION__, __LINE__, read_cmos_sensor(0x0211));	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0212,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x0212));	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0213,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x0213));
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0214,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x0214));	
+	S5K4H5YXDB("[S5K4H5YX] [%s, %d] [0x0215,0x%x]\n", __FUNCTION__, __LINE__,read_cmos_sensor(0x0215));
+}
+
+void S5K4H5YX_MIPI_update_wb_register_from_otp(void)
+{
+	struct S5K4H5YX_MIPI_otp_struct current_otp = {0};
+	S5K4H5YX_MIPI_read_otp_wb(&current_otp);
+	S5K4H5YX_MIPI_algorithm_otp_wb1(&current_otp);
+	S5K4H5YX_MIPI_write_otp_wb(&current_otp);
+}
+#endif
 static void set_dummy(void)
 {
 	LOG_INF("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
@@ -209,6 +470,7 @@ static void set_dummy(void)
 
 static void set_max_framerate(UINT16 framerate,kal_bool min_framelength_en)
 {
+	kal_int16 dummy_line;
 	kal_uint32 frame_length = imgsensor.frame_length;
 	//unsigned long flags;
 
@@ -239,6 +501,7 @@ static void set_max_framerate(UINT16 framerate,kal_bool min_framelength_en)
 static void write_shutter(kal_uint16 shutter)
 	{
 		kal_uint16 realtime_fps = 0;
+		kal_uint32 frame_length = 0;
 		// shutter=2512;//add for debug capture framerate  
 		/* 0x3500, 0x3501, 0x3502 will increase VBLANK to get exposure larger than frame exposure */
 		/* AE doesn't update sensor gain at capture mode, thus extra exposure lines must be updated here. */
@@ -336,6 +599,12 @@ static void set_shutter(kal_uint16 shutter)
 	write_shutter(shutter);
 }	/*	set_shutter */
 
+
+
+static kal_uint16 gain2reg(const kal_uint16 gain)
+{
+}
+
 /*************************************************************************
 * FUNCTION
 *	set_gain
@@ -360,7 +629,6 @@ static kal_uint16 set_gain(kal_uint16 gain)
 	write_cmos_sensor(0x0204,(gain>>8));
 	write_cmos_sensor(0x0205,(gain&0xff));
 	//write_cmos_sensor(0x0104, 0x00);
-    return 0;
 }   /*  S5K4H5YCMIPI_SetGain  */
 
 static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gain)
@@ -370,7 +638,7 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
 }
 
 
-#if 0
+
 static void set_mirror_flip(kal_uint8 image_mirror)
 {
 	LOG_INF("image_mirror = %d\n", image_mirror);
@@ -404,7 +672,6 @@ static void set_mirror_flip(kal_uint8 image_mirror)
     }
 
 }
-#endif
 
 /*************************************************************************
 * FUNCTION
@@ -469,7 +736,7 @@ static void preview_setting(void)
 		write_cmos_sensor(0x0303,0x01);
 		write_cmos_sensor(0x0305,0x06);
 		write_cmos_sensor(0x0306,0x00);
-		write_cmos_sensor(0x0307,0x8C);
+		write_cmos_sensor(0x0307,0x82);
 		write_cmos_sensor(0x0309,0x02);
 		write_cmos_sensor(0x030B,0x01);
 		write_cmos_sensor(0x3C59,0x00);
@@ -480,7 +747,7 @@ static void preview_setting(void)
 		write_cmos_sensor(0x0310,0x01);
 		write_cmos_sensor(0x3C50,0x53);
 		write_cmos_sensor(0x3C62,0x02);
-		write_cmos_sensor(0x3C63,0xBC);
+		write_cmos_sensor(0x3C63,0x8A);
 		write_cmos_sensor(0x3C64,0x00);
 		write_cmos_sensor(0x3C65,0x00);
 		write_cmos_sensor(0x0114,0x03);
@@ -488,7 +755,7 @@ static void preview_setting(void)
 		write_cmos_sensor(0x3500,0x0C);
 		write_cmos_sensor(0x3C1A,0xA8);
 		write_cmos_sensor(0x3B29,0x01);//Caval 140613
-		write_cmos_sensor(0x3300,0x01);//Caval 140613	,20150526,01:lsc off		//20150309
+		write_cmos_sensor(0x3300,0x00);//Caval 140613	 //cal shading Otp		
 		write_cmos_sensor(0x3000,0x07);
 		write_cmos_sensor(0x3001,0x05);
 		write_cmos_sensor(0x3002,0x03);
@@ -560,8 +827,11 @@ static void preview_setting(void)
 		write_cmos_sensor(0x3216,0x21);
 		write_cmos_sensor(0x3217,0x02);
 		write_cmos_sensor(0x3218,0x21);
+#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif
 		write_cmos_sensor(0x0100,0x01);
-	}   /*  S5K4H5YCMIPI_Capture_Setting  */
+}   /*  S5K4H5YCMIPI_Capture_Setting  */
 
 static void capture_setting(kal_uint16 currefps)
 {
@@ -603,7 +873,7 @@ static void capture_setting(kal_uint16 currefps)
 			write_cmos_sensor(0x0303, 0x01);
 			write_cmos_sensor(0x0305, 0x06);
 			write_cmos_sensor(0x0306, 0x00);
-			write_cmos_sensor(0x0307, 0x8C);
+			write_cmos_sensor(0x0307, 0x82);
 			write_cmos_sensor(0x0309, 0x02);
 			write_cmos_sensor(0x030B, 0x01);
 			write_cmos_sensor(0x3C59, 0x00);
@@ -613,11 +883,11 @@ static void capture_setting(kal_uint16 currefps)
 			write_cmos_sensor(0x3C5A, 0x01);
 			write_cmos_sensor(0x0310, 0x01);
 			write_cmos_sensor(0x3C50, 0x53);
-			write_cmos_sensor(0x3C62, 0x01);
-			write_cmos_sensor(0x3C63, 0x5E);
+			write_cmos_sensor(0x3C62, 0x02);
+			write_cmos_sensor(0x3C63, 0x8A);
 			write_cmos_sensor(0x3C64, 0x00);
 			write_cmos_sensor(0x3C65, 0x00);
-			write_cmos_sensor(0x3C1E, 0x0F);
+			write_cmos_sensor(0x3C1E, 0x00);
 			write_cmos_sensor(0x3000, 0x07);
 			write_cmos_sensor(0x3001, 0x05);
 			write_cmos_sensor(0x3002, 0x03);
@@ -689,6 +959,10 @@ static void capture_setting(kal_uint16 currefps)
 			write_cmos_sensor(0x3216, 0x21);
 			write_cmos_sensor(0x3217, 0x02);
 			write_cmos_sensor(0x3218, 0x21);
+            write_cmos_sensor(0x3300,0x00);//Caval 140613
+	#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif
 			write_cmos_sensor(0x0100, 0x01);
 	}
 	else
@@ -728,7 +1002,7 @@ static void capture_setting(kal_uint16 currefps)
 		write_cmos_sensor(0x0303,0x01);
 		write_cmos_sensor(0x0305,0x06);
 		write_cmos_sensor(0x0306,0x00);
-		write_cmos_sensor(0x0307,0x8C);
+		write_cmos_sensor(0x0307,0x82);
 		write_cmos_sensor(0x0309,0x02);
 		write_cmos_sensor(0x030B,0x01);
 		write_cmos_sensor(0x3C59,0x00);
@@ -739,7 +1013,7 @@ static void capture_setting(kal_uint16 currefps)
 		write_cmos_sensor(0x0310,0x01);
 		write_cmos_sensor(0x3C50,0x53);
 		write_cmos_sensor(0x3C62,0x02);
-		write_cmos_sensor(0x3C63,0xBC);
+		write_cmos_sensor(0x3C63,0x8A);
 		write_cmos_sensor(0x3C64,0x00);
 		write_cmos_sensor(0x3C65,0x00);
 
@@ -787,7 +1061,7 @@ static void capture_setting(kal_uint16 currefps)
 			//	[3:0]	reg_DIV_G
 	
 	// Embedded line on/off ----------------------------
-	write_cmos_sensor(0x3C1E,0x0F); 	//	[3] reg_isp_fe_TN_SMIA_sync_sel
+	write_cmos_sensor(0x3C1E,0x00); 	//	[3] reg_isp_fe_TN_SMIA_sync_sel
 			//	[2] reg_pat_TN_SMIA_sync_sel
 			//	[1] reg_bpc_TN_SMIA_sync_sel
 			//	[0] reg_outif_TN_SMIA_sync_sel
@@ -797,7 +1071,7 @@ static void capture_setting(kal_uint16 currefps)
 	write_cmos_sensor(0x3500,0x0C); 	//	[3] bpcms_rate_auto
 		write_cmos_sensor(0x3C1A,0xA8);
 		write_cmos_sensor(0x3B29,0x01);//Caval 140613
-		write_cmos_sensor(0x3300,0x01);//Caval 140613		//20150309	//0x00 is open, 0x01 is close
+		write_cmos_sensor(0x3300,0x00);//Caval 140613			
 	
 	// Analog Tuning for 3280x2464 30fps R10 131115
 	write_cmos_sensor(0x3000,0x07);    // ct_ld_start
@@ -871,6 +1145,9 @@ static void capture_setting(kal_uint16 currefps)
 	write_cmos_sensor(0x3216,0x21);    // adc_offset_ms_even1 (LSB) 				   
 	write_cmos_sensor(0x3217,0x02);    // adc_offset_ms_odd1 (MSB)					   
 	write_cmos_sensor(0x3218,0x21);    // adc_offset_ms_odd1 (LSB)
+#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif
 		write_cmos_sensor(0x0100,0x01);
 	}
 }
@@ -906,7 +1183,7 @@ static void normal_video_setting(kal_uint16 currefps)
 			write_cmos_sensor(0x0303,0x01);
 			write_cmos_sensor(0x0305,0x06);
 			write_cmos_sensor(0x0306,0x00);
-			write_cmos_sensor(0x0307,0x8C);
+			write_cmos_sensor(0x0307,0x82);
 			write_cmos_sensor(0x0309,0x02);
 			write_cmos_sensor(0x030B,0x01);
 			write_cmos_sensor(0x3C59,0x00);
@@ -917,15 +1194,15 @@ static void normal_video_setting(kal_uint16 currefps)
 			write_cmos_sensor(0x0310,0x01);
 			write_cmos_sensor(0x3C50,0x53);
 			write_cmos_sensor(0x3C62,0x02);
-			write_cmos_sensor(0x3C63,0xBC);
+			write_cmos_sensor(0x3C63,0x8A);
 			write_cmos_sensor(0x3C64,0x00);
 			write_cmos_sensor(0x3C65,0x00);
 		write_cmos_sensor(0x0114,0x03);
-		write_cmos_sensor(0x3C1E,0x0F);//Caval 140613
+		write_cmos_sensor(0x3C1E,0x00);//Caval 140613
 		write_cmos_sensor(0x3500,0x0C);
 		write_cmos_sensor(0x3C1A,0xA8);
 	write_cmos_sensor(0x3B29,0x01); 	 // OTP enable
-		write_cmos_sensor(0x3300,0x01);//Caval 140613		20150526,01:lsc off	//20150309	
+		write_cmos_sensor(0x3300,0x00);//Caval 140613			
 		write_cmos_sensor(0x3000,0x07);
 		write_cmos_sensor(0x3001,0x05);
 		write_cmos_sensor(0x3002,0x03);
@@ -997,6 +1274,9 @@ static void normal_video_setting(kal_uint16 currefps)
 		write_cmos_sensor(0x3216,0x21);
 		write_cmos_sensor(0x3217,0x02);
 		write_cmos_sensor(0x3218,0x21);
+#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif
 			write_cmos_sensor(0x0100,0x01);
 		}
 static void hs_video_setting(void) 
@@ -1059,7 +1339,7 @@ static void hs_video_setting(void)
 			write_cmos_sensor(0x0303,0x01);     	//vt_sys_clk_div                                                  
 			write_cmos_sensor(0x0305,0x06);     	//pre_pll_clk_div                                                 
 			write_cmos_sensor(0x0306,0x00);     	//pll_multiplier H                                                
-			write_cmos_sensor(0x0307,0x8C);     	//pll_multiplier L                                                
+			write_cmos_sensor(0x0307,0x82);     	//pll_multiplier L                                                
 			write_cmos_sensor(0x0309,0x02);     	//op_pix_clk_div                                                  
 			write_cmos_sensor(0x030B,0x01);     	//op_sys_clk_div                                                  
 			write_cmos_sensor(0x3C59,0x00);     	//write_cmos_sensor_PLL_S                                                       
@@ -1070,11 +1350,11 @@ static void hs_video_setting(void)
 			write_cmos_sensor(0x0310,0x01);     	//pll_mode (01h : 2-PLL, 00h : 1-PLL)                             
 			write_cmos_sensor(0x3C50,0x53);     	//write_cmos_sensor_DIV_G /write_cmos_sensor_DIV_DBR                                          
 			write_cmos_sensor(0x3C62,0x02);       //Bandwith control	requested_link_bit_rate_mbps HH[31:24]          
-			write_cmos_sensor(0x3C63,0xBC);     	//requested_link_bit_rate_mbps HL[23:16]                          
+			write_cmos_sensor(0x3C63,0x8A);     	//requested_link_bit_rate_mbps HL[23:16]                          
 			write_cmos_sensor(0x3C64,0x00);     	//requested_link_bit_rate_mbps LH[15:8]                           
 			write_cmos_sensor(0x3C65,0x00);     	//requested_link_bit_rate_mbps LL[7:0]                            
 			                  
-			write_cmos_sensor(0x3C1E,0x0F);       //Embedded line on/off 	reg_fe_TN_SMIA_sync_sel[3]            
+			write_cmos_sensor(0x3C1E,0x00);       //Embedded line on/off 	reg_fe_TN_SMIA_sync_sel[3]            
 			    	//Reg_pat_TN0x_SMIA0x_sync_sel[2]                                     
 			    	//reg_bpc_TN0x_SMIA0x_sync_sel[1]                                     
 			    	//Reg_outif_0xTN_SM0xIA_sync_sel[0]                                   
@@ -1159,7 +1439,10 @@ static void hs_video_setting(void)
 			write_cmos_sensor(0x3216,0x21);
 			write_cmos_sensor(0x3217,0x02);
 			write_cmos_sensor(0x3218,0x21);
-			                  
+			write_cmos_sensor(0x3300,0x00);
+#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif     
 			write_cmos_sensor(0x0100,0x01);
 	}
 
@@ -1234,7 +1517,7 @@ static void slim_video_setting(void)
 		write_cmos_sensor(0x0303,0x01); 	//	[3:0]	vt_sys_clk_div
 		write_cmos_sensor(0x0305,0x06); 	//	[5:0]	pre_pll_clk_div
 		write_cmos_sensor(0x0306,0x00); 	//	[9:8]	pll_multiplier H
-		write_cmos_sensor(0x0307,0x8C); 	//	[7:0]	pll_multiplier L
+		write_cmos_sensor(0x0307,0x82); 	//	[7:0]	pll_multiplier L
 		write_cmos_sensor(0x0309,0x02); 	//	[3:0]	op_pix_clk_div
 		write_cmos_sensor(0x030B,0x01); 	//	[3:0]	op_sys_clk_div
 		write_cmos_sensor(0x3C59,0x00); 	//	[2:0]	reg_PLL_S
@@ -1246,12 +1529,12 @@ static void slim_video_setting(void)
 		write_cmos_sensor(0x3C50,0x53); 	//	[7:4]	reg_DIV_DBR
 		//reg_DIV_G
 		write_cmos_sensor(0x3C62,0x02); 	//	[31:24] requested_link_bit_rate_mbps HH
-		write_cmos_sensor(0x3C63,0xBC); 	//	[23:16] requested_link_bit_rate_mbps HL
+		write_cmos_sensor(0x3C63,0x8A); 	//	[23:16] requested_link_bit_rate_mbps HL
 		write_cmos_sensor(0x3C64,0x00); 	//	[15:8]	requested_link_bit_rate_mbps LH
 		write_cmos_sensor(0x3C65,0x00); 	//	[7:0]	requested_link_bit_rate_mbps LL
 		
 		//Embedded line on/off ----------------------------
-		write_cmos_sensor(0x3C1E,0x0F); 	//	[3] reg_isp_fe_TN_SMIA_sync_sel
+		write_cmos_sensor(0x3C1E,0x00); 	//	[3] reg_isp_fe_TN_SMIA_sync_sel
 		//[);2]	reg_pat_TN_SMIA_sync_sel
 		//[);1]	reg_bpc_TN_SMIA_sync_sel
 		//[);0]	reg_outif_TN_SMIA_sync_sel
@@ -1336,8 +1619,10 @@ static void slim_video_setting(void)
 		write_cmos_sensor(0x3217,0x02);    // adc_offset_ms_odd1 (MSB)					   
 		write_cmos_sensor(0x3218,0x21);    // adc_offset_ms_odd1 (LSB)
 		write_cmos_sensor(0x3B29,0x01); 	 // OTP enable
-		
-		
+		write_cmos_sensor(0x3300,0x00);
+	#if defined(S5K4H5YX_USE_AWB_OTP)
+	S5K4H5YX_MIPI_update_wb_register_from_otp();
+#endif	
 		//Straming On -----------------------------------
 		write_cmos_sensor(0x0100,0x01);    // Streaming On
 		
@@ -1362,12 +1647,12 @@ static void slim_video_setting(void)
 *************************************************************************/
 static kal_uint32 get_imgsensor_id(UINT32 *sensor_id) 
 {
-	kal_uint8 retry = 0;
-    kal_uint8 i=0;
+	kal_uint8 i = 0;
+    int  retry = 2;
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
-	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
+	//while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
-        imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
+		imgsensor.i2c_write_id = 0x6c;//imgsensor_info.i2c_addr_table[i];
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 			*sensor_id = ((read_cmos_sensor(0x0000) << 8) | read_cmos_sensor(0x0001));
@@ -1378,13 +1663,15 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			LOG_INF("Read sensor id fail, id: 0x%x,0x%x\n", imgsensor.i2c_write_id,*sensor_id);
 			retry--;
 		} while(retry > 0);
-		i++;
-		retry = 2;
-	}
+		//i++;
+		//retry = 2;
+//	}
 	if (*sensor_id != imgsensor_info.sensor_id) {
 		// if Sensor ID is not correct, Must set *sensor_id to 0xFFFFFFFF 
+		//*sensor_id = imgsensor_info.sensor_id;
+		//return ERROR_NONE;
 		*sensor_id = 0xFFFFFFFF;
-		return ERROR_NONE;
+		return ERROR_SENSOR_CONNECT_FAIL;
 	}
 	return ERROR_NONE;
 }
@@ -1410,35 +1697,39 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 static kal_uint32 open(void)
 {
 	//const kal_uint8 i2c_addr[] = {IMGSENSOR_WRITE_ID_1, IMGSENSOR_WRITE_ID_2};
-	kal_uint8 retry = 1;
 	kal_uint8 i = 0;
+	kal_uint8 retry = 2;
 	kal_uint16 sensor_id = 0; 
-	LOG_INF("PLATFORM:MT6735,MIPI 4LANE\n");
+	LOG_INF("PLATFORM:MT6595,MIPI 2LANE\n");
 	LOG_INF("preview 1280*960@30fps,864Mbps/lane; video 1280*960@30fps,864Mbps/lane; capture 5M@30fps,864Mbps/lane\n");
 	
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
-	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
+	//while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
-		imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
+		imgsensor.i2c_write_id = 0x6c;//imgsensor_info.i2c_addr_table[i];
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 			sensor_id = ((read_cmos_sensor(0x0000) << 8) | read_cmos_sensor(0x0001));
-			if (sensor_id == imgsensor_info.sensor_id) {				
-				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);	  
+			if (sensor_id == imgsensor_info.sensor_id) {	
+				printk("this is s5k4h5_qiutai module\n");			
+				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x,0x%x\n", imgsensor.i2c_write_id,sensor_id);	  
 				break;
 			}	
 			LOG_INF("Read sensor id fail, id: 0x%x,0x%x\n", imgsensor.i2c_write_id,sensor_id);
 			retry--;
 		} while(retry > 0);
-		i++;
-		if (sensor_id == imgsensor_info.sensor_id)
-			break;
-		retry = 2;
-	}		 
+		//i++;
+		//if (sensor_id == imgsensor_info.sensor_id)
+		//	break;
+		//retry = 2;
+	//}		 
 	if (imgsensor_info.sensor_id != sensor_id)
 		return ERROR_SENSOR_CONNECT_FAIL;
 
-	
+	if(open_count==0){
+		AFOTP_proc_init();
+	}
+	open_count++;	
 
 
 	
@@ -1525,6 +1816,7 @@ static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	//imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	preview_setting();
+
 	return ERROR_NONE;
 }   /*  S5K4H5YCMIPIPreview   */
 
@@ -1557,7 +1849,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 		//imgsensor.autoflicker_en = KAL_FALSE;
 	} else {
 		if (imgsensor.current_fps != imgsensor_info.cap.max_framerate)
-			LOG_INF("Warning: current_fps fps is not support, so use cap1's setting: %d fps!\n",imgsensor_info.cap1.max_framerate/10);
+			LOG_INF("Warning: current_fps %d fps is not support, so use cap1's setting: %d fps!\n",imgsensor_info.cap1.max_framerate/10);
 		imgsensor.pclk = imgsensor_info.cap.pclk;
 		imgsensor.line_length = imgsensor_info.cap.linelength;
 		imgsensor.frame_length = imgsensor_info.cap.framelength;  
@@ -1826,7 +2118,8 @@ static kal_uint32 set_auto_flicker_mode(kal_bool enable, UINT16 framerate)
 
 static kal_uint32 set_max_framerate_by_scenario(MSDK_SCENARIO_ID_ENUM scenario_id, MUINT32 framerate) 
 {
-	kal_uint32 frameHeight;
+	kal_int16 dummyLine;
+	kal_uint32 lineLength,frameHeight;
   
 	LOG_INF("scenario_id = %d, framerate = %d\n", scenario_id, framerate);
 				if(framerate == 0)
@@ -1956,7 +2249,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 	UINT32 *feature_return_para_32=(UINT32 *) feature_para;
 	UINT32 *feature_data_32=(UINT32 *) feature_para;
 	unsigned long long *feature_data=(unsigned long long *) feature_para;
-    //unsigned long long *feature_return_para=(unsigned long long *) feature_para;
+	unsigned long long *feature_return_para=(unsigned long long *) feature_para;
 	SENSOR_WINSIZE_INFO_STRUCT *wininfo;	
 	MSDK_SENSOR_REG_INFO_STRUCT *sensor_reg_data=(MSDK_SENSOR_REG_INFO_STRUCT *) feature_para;
  
